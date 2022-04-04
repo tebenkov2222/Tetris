@@ -23,6 +23,7 @@ namespace Version2.Shape
             {
                 _beaker.MoveShape(0,1);
                 _lastTime = Time.time;
+                
             }
         }
     }
