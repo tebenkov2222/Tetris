@@ -87,6 +87,12 @@ namespace Version1
             _matrix[vector2Int.Y][vector2Int.X] = value;
         }
 
+        public void MovePoint(Vector2Int startPosition, Vector2Int endPosition)
+        {
+            SetMatrixValue(endPosition,GetMatrixValue(startPosition));
+            SetMatrixViewValue(endPosition,GetMatrixViewValue(startPosition));
+            if(GetMatrixValue(endPosition) == 2)GetMatrixViewValue(endPosition).UpdatePosition(endPosition);
+        }
         public PointView GetMatrixViewValue(Vector2Int vector2Int)
         {
             return MatrixView[vector2Int.Y][vector2Int.X];

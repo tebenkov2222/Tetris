@@ -16,14 +16,12 @@ namespace Version1.Controllers
         private List<Vector2Int> _nextPositionsShape;
         private float _lastTime;
         private float _deltaTime = 1;
-        private float _deltaTimeSprint = 0.1f;
         private bool _isCanMoved;
         private MatrixController _matrixController;
-        public event ReturnVoid OnShapeStay;
+        public event ReturnListVector2Int OnShapeStay;
         private int _sizeX;
         private int _sizeY;
         private IInput _input;
-
         public MoveShapeController(MatrixController matrixController, IInput input, int sizeX, int sizeY)
         {
             _centerPosition = new Vector2Int(-1, -1);
@@ -37,6 +35,10 @@ namespace Version1.Controllers
             _isCanMoved = true;
         }
 
+        public void DevideDeltaTime()
+        {
+            _deltaTime *= 0.5f;
+        }
         private void OnButtonChange(Button button, ButtonState buttonstate)
         {
             switch (button)
@@ -121,13 +123,13 @@ namespace Version1.Controllers
         public void CheckMoveDown()
         {
             if(!_isCanMoved) return;
-            if (!(Time.time - _lastTime > (_isSprint? _deltaTimeSprint:_deltaTime))) return;
+            if (!(Time.time - _lastTime > _deltaTime*(_isSprint? 0.1f:1))) return;
             _lastTime = Time.time;
             if (!MoveTo(Vector2Int.Up))
             {
                 _isCanMoved = false;
                 _matrixController.StayShape(_positionsShape);
-                OnShapeStay?.Invoke();
+                OnShapeStay?.Invoke(_positionsShape);
                 return;
             }
 
