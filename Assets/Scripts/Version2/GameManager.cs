@@ -23,6 +23,7 @@ namespace Version2
             _matrix = new MatrixController(_prefabPoint, _beaker.Field.Count, _beaker.Field[0].Count, _startX, _startY,
                 _deltaX, _deltaY);
             _moveShape = new MoveShape(_beaker);
+            _matrix.SetCurrentColor(_beaker.Shape.Color);
         }
 
         private void Update()

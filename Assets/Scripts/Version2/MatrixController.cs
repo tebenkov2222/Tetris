@@ -16,6 +16,7 @@ namespace Version2
             private set => _matrix = value;
         }
 
+        private Color _currentColor;
         public MatrixController(PointView prefab, int sizeX, int sizeY, float startX, float startY, float deltaX,
             float deltaY)
         {
@@ -33,12 +34,17 @@ namespace Version2
             }
         }
 
+        public void SetCurrentColor(Color currentColor)
+        {
+            _currentColor = currentColor;
+        }
         public void UpdateMatrix(List<List<bool>> values)
         {
             for (var i = 0; i < values.Count; i++)
             {
                 for (var y = 0; y < values[y].Count; y++)
                 {
+                    _matrix[i][y].SetColor(_currentColor);
                     _matrix[i][y].View(values[i][y]);
                     if(values[i][y]) Debug.Log($"{i} {y} is true");
                 }

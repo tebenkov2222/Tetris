@@ -10,5 +10,10 @@ namespace Version2.View
         {
             _spriteRenderer.color = value ? _enableColor : _disableColor;
         }
+
+        public void SetColor(Color color)
+        {
+            _enableColor = color;
+        }
     }
 }
