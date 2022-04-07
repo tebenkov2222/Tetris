@@ -2,15 +2,20 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Version1.Core;
-using Version1.DTOs;
-using Version1.Shared;
 using Version1.Views;
 
 namespace Version1.Controllers
 {
     public class SpawnShapeController
     {
+        private System.Random _random;
+        public SpawnShapeController(PointView prefab)
+        {
+            _prefab = prefab;
+        }
+
         private PointView _prefab;
+
         public ShapeBase GetRandomShape()
         {
             int range = Random.Range(0, 7);
@@ -44,10 +49,6 @@ namespace Version1.Controllers
             return positions;
         }
 
-        public SpawnShapeController(PointView prefab)
-        {
-            _prefab = prefab;
-        }
         public Shape SpawnRandomShape()
         {
             var randomShape= GetRandomShape();

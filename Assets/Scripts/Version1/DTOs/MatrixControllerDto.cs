@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using Version1.Views;
 
 namespace Version1.DTOs
 { 

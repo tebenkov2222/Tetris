@@ -102,6 +102,12 @@ namespace Version1.Controllers
             SetMatrixViewValue(endPosition,GetMatrixViewValue(startPosition));
             if(GetMatrixValue(endPosition) == 2)GetMatrixViewValue(endPosition).UpdatePosition(MatrixPositionToGlobalPosition(endPosition));
         }
+        public void DeletePoint(Vector2Int position)
+        {
+            SetMatrixValue(position,0);
+            GetMatrixViewValue(position).Destroy();
+            SetMatrixViewValue(position,null);
+        }
         public PointView GetMatrixViewValue(Vector2Int vector2Int)
         {
             return MatrixView[vector2Int.Y][vector2Int.X];

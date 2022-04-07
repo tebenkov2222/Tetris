@@ -1,6 +1,3 @@
-
-using UnityEngine;
-
 namespace Version1.Controllers
 {
     public class MatrixOperationsController
@@ -16,9 +13,7 @@ namespace Version1.Controllers
         {
             for (int j = 0; j < _matrixController.Size.X; j++)
             {
-                _matrixController.SetMatrixValue(new Vector2Int(j,rowCheck),0);
-                Object.Destroy(_matrixController.GetMatrixViewValue(new Vector2Int(j,rowCheck)).gameObject);
-                _matrixController.SetMatrixViewValue(new Vector2Int(j,rowCheck),null);
+                _matrixController.DeletePoint(new Vector2Int(j, rowCheck));
             }
         }
         public void MoveDownAllUnder(int rowCheck)

@@ -19,5 +19,10 @@ namespace Version1.Views
         {
             transform.position = position;
         }
+
+        public void Destroy()
+        {
+            Destroy(gameObject);
+        }
     }
 }
