@@ -10,8 +10,6 @@ namespace Version1.Controllers
 {
     public class SpawnShapeController
     {
-        public event ReturnShape OnSpawnShape;
-        public event ReturnVoid OnFullMatrix;
         private PointView _prefab;
         public ShapeBase GetRandomShape()
         {
@@ -50,7 +48,7 @@ namespace Version1.Controllers
         {
             _prefab = prefab;
         }
-        public void SpawnRandomShape()
+        public Shape SpawnRandomShape()
         {
             var randomShape= GetRandomShape();
             var points = ShapeImageToMatrixPositions(randomShape, new Vector2Int(3 ,0));
@@ -61,8 +59,7 @@ namespace Version1.Controllers
                 instantiate.Init(randomShape.Color, Vector3.zero);
                 instantiate.SetEnable(false);
             }
-            Shape shape = new Shape(pointViews,points);
-            OnSpawnShape?.Invoke(shape);
+            return new Shape(pointViews,points);
         }
     }
 }

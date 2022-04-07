@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using App.Scripts.Shared.Inputs;
 using App.Scripts.Shared.Inputs.ScriptableObjects;
 using UnityEngine;
@@ -12,9 +13,11 @@ namespace Version1
 {
     public class GameManager : MonoBehaviour
     {
+        [SerializeField] private PointView _pointViewPrefab;
         [SerializeField] private ScoreView _scoreView; 
         [SerializeField] private ScoreView _maxScoreView; 
         [SerializeField] private MatrixControllerDto _matrixControllerDto;
+        [SerializeField] private WindowControllerDto _windowControllerDto;
         [SerializeField] private InputPcSo _pcSettings;
         private bool _isEndGame;
 
@@ -25,79 +28,89 @@ namespace Version1
 
         private MatrixController _matrixController;
         private MatrixOperationsController _matrixOperationsController;
-        private MoveShapeController _moveShape;
+        private MoveShapeController _moveShapeController;
         private SpawnShapeController _spawnShapeController;
         private CheckRoundsController _checkRoundsController;
         private LevelUpController _levelUpController;
         private ScoreController _scoreController;
         private Score _score;
+        private WindowController _windowController;
+
+        private bool _windowSerialized;
         
         private void Awake()
         {
             _input = new PCInput(_pcSettings);
-            _matrixController = new MatrixController(_matrixControllerDto);
-            _matrixOperationsController = new MatrixOperationsController(_matrixController, _matrixControllerDto.Size);
-            _checkRoundsController = new CheckRoundsController(_matrixOperationsController);
-            _moveShape = new MoveShapeController(_matrixController,_input);
+            
             _scoreController = new ScoreController();
             _scoreController.Score.OnValueChange += _scoreView.SetValue;
             _scoreController.MaxScore.OnValueChange += _maxScoreView.SetValue;
             _maxScoreView.SetValue(_scoreController.MaxScore.Value);
-            _moveShape.OnShapeStay+=OnShapeStay;
-            _spawnShapeController = new SpawnShapeController(_matrixControllerDto.Prefab);
-            _spawnShapeController.OnSpawnShape+=OnSpawnShape;
-            _spawnShapeController.OnFullMatrix+=OnFullMatrix;
-            _spawnShapeController.SpawnRandomShape();
-            _levelUpController = new LevelUpController(_moveShape);
+
+            _matrixController = new MatrixController(_matrixControllerDto);
+            _matrixOperationsController = new MatrixOperationsController(_matrixController);
+            _checkRoundsController = new CheckRoundsController(_matrixOperationsController);
+
+            _windowController = new WindowController(_windowControllerDto);
+
+            _moveShapeController = new MoveShapeController(_matrixController,_input);
+            _moveShapeController.OnShapeStay+=OnShapeControllerStay;
+            _spawnShapeController = new SpawnShapeController(_pointViewPrefab);
+            _levelUpController = new LevelUpController(_moveShapeController);
+            SpawnShape();
         }
 
-        private void OnFullMatrix()
-        {
-            _isEndGame = true;
-        }
-
-        private void OnShapeStay()
+        private void OnShapeControllerStay()
         {
             if(_isEndGame) return;
             _matrixController.StayShape(_movedShape.Points);
             var check = _checkRoundsController.Check(_movedShape.GetRows());
             _scoreController.AddScoreByLine(check);
-            _spawnShapeController.SpawnRandomShape();
+            SpawnShape();
         }
 
         private void OnDisable()
         {
-            _spawnShapeController.OnSpawnShape-=OnSpawnShape;
-            _moveShape.OnShapeStay-=OnShapeStay;
+            _moveShapeController.OnDisable();
+            _moveShapeController.OnShapeStay-=OnShapeControllerStay;
             _scoreController.Score.OnValueChange -= _scoreView.SetValue;
             _scoreController.MaxScore.OnValueChange -= _maxScoreView.SetValue;
         }
 
-        private void OnSpawnShape(Shape spawnedShape)
+        private void SpawnShape()
         {
-            foreach (var point in spawnedShape.Points)
+            if (!_windowSerialized)
             {
-                if (_matrixController.CheckMatrixValue(point, 2))
-                {
-                    FullMatrix();
-                    return;
-                }
+                _windowSerialized = true;
+                _nextShape = _spawnShapeController.SpawnRandomShape();
             }
-            
+
+            _movedShape = _nextShape;
+
+            if (_movedShape.Points.Any(point => _matrixController.CheckMatrixValue(point, 2)))
+            {
+                FullMatrix();
+                return;
+            }
+
             if(_isEndGame) return;
-            _movedShape = spawnedShape;
-            _moveShape.ChangeShape(spawnedShape);
-            _matrixController.SpawnPoints(spawnedShape.PointViews, spawnedShape.Points);
+            
+            Shape randomShape = _spawnShapeController.SpawnRandomShape();
+            _nextShape = randomShape;
+            _windowController.UpdateShape(randomShape);
+
+            _moveShapeController.ChangeShape(_movedShape);
+            _matrixController.SpawnPoints(_movedShape.PointViews, _movedShape.Points);
         }
 
         private void FullMatrix()
         {
-            
+            _isEndGame = true;
         }
         private void FixedUpdate()
         {
             if(_isEndGame) return;
-            _moveShape.Fixed();
+            _moveShapeController.Fixed();
         }
 
         private void Update()

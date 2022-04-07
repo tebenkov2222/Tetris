@@ -94,7 +94,6 @@ namespace Version1.Controllers
             if (!TryMoveTo(Vector2Int.Up))
             {
                 _isCanMoved = false;
-                //_matrixController.StayShape(_positionsShape);
                 OnShapeStay?.Invoke();
                 return;
             }
@@ -120,6 +119,10 @@ namespace Version1.Controllers
             return true;
         }
 
+        public void OnDisable()
+        {
+            _input.ReturnButtonEvent -= OnButtonChange;
+        }
         public bool CheckRange(Vector2Int position) =>position.Y >= 0 && position.Y < _matrixController.Size.Y && position.X >= 0 && position.X < _matrixController.Size.X;
     }
 }
