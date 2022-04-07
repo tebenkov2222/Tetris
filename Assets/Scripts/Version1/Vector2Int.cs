@@ -1,5 +1,8 @@
-﻿namespace Version1
+﻿using System;
+
+namespace Version1
 {
+    [Serializable]
     public class Vector2Int
     {
         public int X;
@@ -39,6 +42,26 @@
         public override string ToString()
         {
             return $"x = {X} y = {Y}";
+        }
+        protected bool Equals(Vector2Int other)
+        {
+            return X == other.X && Y == other.Y;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((Vector2Int) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (X * 397) ^ Y;
+            }
         }
 
         public static Vector2Int Up => new Vector2Int(0, 1);

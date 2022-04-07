@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Version1.DTOs;
-using Version1.Shared;
 using Version1.Views;
 
-namespace Version1
+namespace Version1.Controllers
 {
     public class MatrixController
     {
@@ -19,17 +18,25 @@ namespace Version1
             private set => _matrixView = value;
         }
 
+        public Vector2Int Size
+        {
+            get;
+            private set;
+        }
+
         private MatrixControllerDto _matrixControllerDto;
         public MatrixController(MatrixControllerDto matrixControllerDto)
         {
+            _matrixControllerDto = matrixControllerDto;
+            Size = matrixControllerDto.Size;
             _updatePoint = new List<Vector2Int>();
             _matrix = new List<List<byte>>();
             MatrixView = new List<List<PointView>>();
-            for (int i = 0; i < matrixControllerDto.SizeY; i++)
+            for (int i = 0; i < Size.Y; i++)
             {
                 _matrix.Add(new List<byte>());
                 MatrixView.Add(new List<PointView>());
-                for (int j = 0; j < matrixControllerDto.SizeX; j++)
+                for (int j = 0; j < Size.X; j++)
                 {
                     _matrix[i].Add(0);
                     MatrixView[i].Add(null);
@@ -37,15 +44,17 @@ namespace Version1
             }
         }
 
-        public void SpawnPoints(List<PointView> points)
+        public void SpawnPoints(List<PointView> points, List<Vector2Int> positions)
         {
-            foreach (var point in points)
+            for (var i = 0; i < positions.Count; i++)
             {
-                SetMatrixViewValue(point.Vector2Int,point);
-                SetMatrixValue(point.Vector2Int, 1);
+                SetMatrixViewValue(positions[i],points[i]);
+                SetMatrixValue(positions[i], 1);
+                points[i].SetEnable(true);
+                points[i].UpdatePosition(MatrixPositionToGlobalPosition(positions[i]));
             }
         }
-        public void UpdateMatrix(List<Vector2Int> lastPosition, List<Vector2Int> nextPosition)
+        public void MovePoits(List<Vector2Int> lastPosition, List<Vector2Int> nextPosition)
         {
             _updatePoint.Clear();
             Dictionary<Vector2Int, PointView> pointViews = new Dictionary<Vector2Int, PointView>();
@@ -53,7 +62,7 @@ namespace Version1
             {
                 var lastPos = lastPosition[i];
                 SetMatrixValue(lastPos, 0);
-                GetMatrixViewValue(lastPos).UpdatePosition(nextPosition[i]);
+                GetMatrixViewValue(lastPos).UpdatePosition(MatrixPositionToGlobalPosition(nextPosition[i]));
                 pointViews.Add(lastPos, GetMatrixViewValue(lastPos));
                 SetMatrixViewValue(lastPos, null);
             }
@@ -91,7 +100,7 @@ namespace Version1
         {
             SetMatrixValue(endPosition,GetMatrixValue(startPosition));
             SetMatrixViewValue(endPosition,GetMatrixViewValue(startPosition));
-            if(GetMatrixValue(endPosition) == 2)GetMatrixViewValue(endPosition).UpdatePosition(endPosition);
+            if(GetMatrixValue(endPosition) == 2)GetMatrixViewValue(endPosition).UpdatePosition(MatrixPositionToGlobalPosition(endPosition));
         }
         public PointView GetMatrixViewValue(Vector2Int vector2Int)
         {
@@ -100,6 +109,12 @@ namespace Version1
         public void SetMatrixViewValue(Vector2Int vector2Int, PointView value)
         {
             MatrixView[vector2Int.Y][vector2Int.X] = value;
+        }
+
+        public Vector3 MatrixPositionToGlobalPosition(Vector2Int matrixPosition)
+        {
+            return new Vector3(_matrixControllerDto.StartPosition.x + _matrixControllerDto.DeltaPosition.x * matrixPosition.X,
+                _matrixControllerDto.StartPosition.y - _matrixControllerDto.DeltaPosition .y * matrixPosition.Y);
         }
     }
 }

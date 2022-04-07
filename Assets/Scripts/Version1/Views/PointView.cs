@@ -6,20 +6,18 @@ namespace Version1.Views
     public class PointView : MonoBehaviour
     {
         [SerializeField] private SpriteRenderer _spriteRenderer;
-        private Vector2Int _vector2Int;
-        public Vector2Int Vector2Int => _vector2Int;
-        private PointViewDto _pointViewDto;
-        public void Init(PointViewDto pointViewDto, Vector2Int startVector2Int)
+        public void Init(Color color, Vector3 startPosition)
         {
-            _spriteRenderer.color = pointViewDto.Color;
-            _pointViewDto = pointViewDto;
-            UpdatePosition(startVector2Int);
+            _spriteRenderer.color = color;
+            UpdatePosition(startPosition);
         }
-        public void UpdatePosition(Vector2Int vector2Int)
+        public void SetEnable(bool isEnabled)
         {
-            _vector2Int = vector2Int;
-            transform.position = new Vector3(_pointViewDto.StartX + _pointViewDto.DeltaX * vector2Int.X,
-                _pointViewDto.StartY - _pointViewDto.DeltaY * vector2Int.Y);
+            gameObject.SetActive(isEnabled);   
+        }
+        public void UpdatePosition(Vector3 position)
+        {
+            transform.position = position;
         }
     }
 }

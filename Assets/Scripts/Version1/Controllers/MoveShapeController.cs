@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using App.Scripts.Shared.Inputs;
 using UnityEngine;
+using Version1.Core;
 using Version1.Shared;
 using Button = App.Scripts.Shared.Inputs.Button;
 
@@ -9,8 +10,7 @@ namespace Version1.Controllers
 {
     public class MoveShapeController
     {
-        private List<Vector2Int> _positionsShape;
-        private Vector2Int _centerPosition;
+        private Shape _movedShape;
         private int _centerPointIndex;
         private bool _isSprint;
         private List<Vector2Int> _nextPositionsShape;
@@ -18,20 +18,14 @@ namespace Version1.Controllers
         private float _deltaTime = 1;
         private bool _isCanMoved;
         private MatrixController _matrixController;
-        public event ReturnListVector2Int OnShapeStay;
-        private int _sizeX;
-        private int _sizeY;
+        public event ReturnVoid OnShapeStay;
         private IInput _input;
-        public MoveShapeController(MatrixController matrixController, IInput input, int sizeX, int sizeY)
+        public MoveShapeController(MatrixController matrixController, IInput input)
         {
-            _centerPosition = new Vector2Int(-1, -1);
             _input = input;
             _input.ReturnButtonEvent += OnButtonChange;
             _matrixController = matrixController;
-            _sizeX = sizeX;
-            _sizeY = sizeY;
             _nextPositionsShape = new List<Vector2Int>();
-            _positionsShape = new List<Vector2Int>();
             _isCanMoved = true;
         }
 
@@ -44,11 +38,11 @@ namespace Version1.Controllers
             switch (button)
             {
                 case Button.Right:
-                    if (!MoveTo(Vector2Int.Right)) return;
+                    if (!TryMoveTo(Vector2Int.Right)) return;
                     UpdateMatrix();
                     break;
                 case Button.Left:
-                    if (!MoveTo(Vector2Int.Left)) return;
+                    if (!TryMoveTo(Vector2Int.Left)) return;
                     UpdateMatrix();
                     break;
                 case Button.Up:
@@ -65,11 +59,10 @@ namespace Version1.Controllers
 
         public bool Rotate()
         {
-            RecalculateCenterPosition();
-            for (var i = 0; i < _positionsShape.Count; i++)
+            for (var i = 0; i < _movedShape.Points.Count; i++)
             {
-                var deltaPosition = _positionsShape[i] - _centerPosition;
-                _nextPositionsShape[i] = _centerPosition + new Vector2Int(deltaPosition.Y, -deltaPosition.X);
+                var deltaPosition = _movedShape.Points[i] - _movedShape.CenterPosition;
+                _nextPositionsShape[i] = _movedShape.CenterPosition + new Vector2Int(deltaPosition.Y, -deltaPosition.X);
                 if (!CheckRange(_nextPositionsShape[i]) || _matrixController.CheckMatrixValue(_nextPositionsShape[i], 2))
                 {
                     return false;
@@ -78,58 +71,31 @@ namespace Version1.Controllers
 
             return true;
         }
-
-        private void FindCenterPosition()
-        {
-            _centerPosition = new Vector2Int(0, 0);
-            foreach (var i in _positionsShape)
-            {
-                _centerPosition += i;
-            }
-
-            _centerPosition /= _positionsShape.Count;
-            for (var i = 0; i < _positionsShape.Count; i++)
-            {
-                if (_positionsShape[i] == _centerPosition)
-                {
-                    _centerPointIndex = i;
-                    return;
-                }
-            }
-        }
-
-        private void RecalculateCenterPosition()
-        {
-            _centerPosition = _positionsShape[_centerPointIndex];
-        }
-
-        public void ChangeShape(List<Vector2Int> positions)
+        public void ChangeShape(Shape shape)
         {
             _lastTime = Time.time;
             _isCanMoved = true;
             _lastTime = Time.time;
-            _positionsShape = new List<Vector2Int>(positions);
-            FindCenterPosition();
+            _movedShape = shape;
             _nextPositionsShape.Clear();
-            _nextPositionsShape.AddRange(positions);
-            _centerPosition = new Vector2Int(-1, -1);
+            _nextPositionsShape.AddRange(shape.Points);
         }
 
         public void Fixed()
         {
-            CheckMoveDown();
+            MoveDown();
         }
 
-        public void CheckMoveDown()
+        public void MoveDown()
         {
             if(!_isCanMoved) return;
             if (!(Time.time - _lastTime > _deltaTime*(_isSprint? 0.1f:1))) return;
             _lastTime = Time.time;
-            if (!MoveTo(Vector2Int.Up))
+            if (!TryMoveTo(Vector2Int.Up))
             {
                 _isCanMoved = false;
-                _matrixController.StayShape(_positionsShape);
-                OnShapeStay?.Invoke(_positionsShape);
+                //_matrixController.StayShape(_positionsShape);
+                OnShapeStay?.Invoke();
                 return;
             }
 
@@ -138,17 +104,14 @@ namespace Version1.Controllers
 
         public void UpdateMatrix()
         {
-            _matrixController.UpdateMatrix(_positionsShape,_nextPositionsShape);
-            for (int i = 0; i < _positionsShape.Count; i++)
-            {
-                _positionsShape[i] = _nextPositionsShape[i];
-            }
+            _matrixController.MovePoits(_movedShape.Points,_nextPositionsShape);
+            _movedShape.UpdatePointPosition(_nextPositionsShape);
         }
-        public bool MoveTo(Vector2Int direction)
+        public bool TryMoveTo(Vector2Int direction)
         {
-            for (var i = 0; i < _positionsShape.Count; i++)
+            for (var i = 0; i < _movedShape.Points.Count; i++)
             {
-                _nextPositionsShape[i] = _positionsShape[i] + direction;
+                _nextPositionsShape[i] = _movedShape.Points[i] + direction;
                 if (!CheckRange(_nextPositionsShape[i]) || _matrixController.CheckMatrixValue(_nextPositionsShape[i], 2))
                 {
                     return false;
@@ -157,9 +120,6 @@ namespace Version1.Controllers
             return true;
         }
 
-        public bool CheckRange(Vector2Int position)
-        {
-            return position.Y >= 0 && position.Y < _sizeY && position.X >= 0 && position.X < _sizeX;
-        }
+        public bool CheckRange(Vector2Int position) =>position.Y >= 0 && position.Y < _matrixController.Size.Y && position.X >= 0 && position.X < _matrixController.Size.X;
     }
 }

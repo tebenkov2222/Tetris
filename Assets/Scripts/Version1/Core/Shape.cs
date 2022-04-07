@@ -1,75 +1,70 @@
 using System.Collections.Generic;
-using UnityEngine;
+using Version1.Views;
 
-namespace Version1
+namespace Version1.Core
 {
     public class Shape
     {
-        public List<List<byte>> Image;
-        public Color Color;
+        public List<PointView> PointViews;
+        public List<Vector2Int> Points
+        {
+            get;
+            private set;
+        }
+        public Vector2Int CenterPosition => Points[_centerIndex];
+        private int _centerIndex = 0;
 
-        public static Shape T = new Shape()
+        public Shape(List<PointView> pointViews, List<Vector2Int> points)
         {
-            Image = new List<List<byte>>()
-            {
-                new List<byte>() {1, 1, 1},
-                new List<byte>() {0, 1, 0}
-            },
-            Color = Color.red
-        };
-        public static Shape I = new Shape()
+            PointViews = pointViews;
+            Points = new List<Vector2Int>(points);
+            FindCenterPoint();
+        }
+
+        public List<int> GetRows()
         {
-            Image = new List<List<byte>>()
+            var rows = new List<int>();
+            foreach (var pointView in Points)
             {
-                new List<byte>() {1, 1, 1, 1}
-            },
-            Color = Color.black
-        };
-        public static Shape Z = new Shape()
+                if(!rows.Contains(pointView.Y)) rows.Add(pointView.Y); 
+            }
+
+            return rows;
+        }
+        public List<int> GetColumns()
         {
-            Image = new List<List<byte>>()
+            var columns = new List<int>();
+            foreach (var pointView in Points)
             {
-                new List<byte>() {1, 1, 0},
-                new List<byte>() {0, 1, 1}
-            },
-            Color = Color.green
-        };
-        public static Shape S = new Shape()
+                if(!columns.Contains(pointView.X)) columns.Add(pointView.X); 
+            }
+
+            return columns;
+        }
+        public void UpdatePointPosition(List<Vector2Int> positions)
         {
-            Image = new List<List<byte>>()
+            for (int i = 0; i < Points.Count; i++)
             {
-                new List<byte>() {0, 1, 1},
-                new List<byte>() {1, 1, 0}
-            },
-            Color = Color.blue
-        };
-        public static Shape O = new Shape()
+                Points[i] = positions[i];
+            }
+        }
+        public void FindCenterPoint()
         {
-            Image = new List<List<byte>>()
+            var centerPosition = new Vector2Int(0, 0);
+            foreach (var i in Points)
             {
-                new List<byte>() {1, 1},
-                new List<byte>() {1, 1}
-            },
-            Color = Color.yellow
-        };
-        public static Shape J = new Shape()
-        {
-            Image = new List<List<byte>>()
+                centerPosition += i;
+            }
+
+            centerPosition /= Points.Count;
+            for (var i = 0; i < Points.Count; i++)
             {
-                new List<byte>() {1, 0, 0},
-                new List<byte>() {1, 1, 1}
-            },
-            Color = Color.cyan
-        };
-        public static Shape L = new Shape()
-        {
-            Image = new List<List<byte>>()
-            {
-                new List<byte>() {1, 1, 1},
-                new List<byte>() {1, 0, 0}
-            },
-            Color = Color.magenta
-        };
+                if (Points[i] == centerPosition)
+                {
+                    _centerIndex = i;
+                    return;
+                }
+            }
+        }
     }
 }
-

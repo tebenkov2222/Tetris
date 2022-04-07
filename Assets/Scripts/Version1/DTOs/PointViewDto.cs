@@ -10,13 +10,13 @@ namespace Version1.DTOs
         public float DeltaY;
         public Color Color;
 
-        public PointViewDto(MatrixControllerDto matrixControllerDto, Color color)
+        public PointViewDto( Color color, float startX, float startY, float deltaX, float deltaY)
         {
-            StartX = matrixControllerDto.StartX;
-            StartY = matrixControllerDto.StartY;
-            DeltaX = matrixControllerDto.DeltaX;
-            DeltaY = matrixControllerDto.DeltaY;
             Color = color;
+            StartX = startX;
+            StartY = startY;
+            DeltaX = deltaX;
+            DeltaY = deltaY;
         }
     }
 }
