@@ -1,5 +1,5 @@
-using App.Scripts.Shared.Inputs.Other;
 using UnityEngine;
+using Version1.Shared.Inputs.Other;
 
 namespace App.Scripts.Shared.Inputs
 {
@@ -22,9 +22,6 @@ namespace App.Scripts.Shared.Inputs
             _input.ReturnButtonEvent += InputOnReturnButton;
             _input.ReturnAxisEvent += InputOnReturnAxis;
         }
-
-        
-
         public InputDecorator(IInput input, IInput inputNext)
         {
             _input = input;
@@ -49,7 +46,8 @@ namespace App.Scripts.Shared.Inputs
         Left,
         Right,
         Up,
-        Down
+        Down,
+        Space
     }
     public enum ButtonState
     {

@@ -1,5 +1,6 @@
 
 using UnityEngine;
+using Version1.Core;
 
 namespace Version1.Controllers
 {

@@ -1,8 +1,9 @@
-using App.Scripts.Shared.Inputs.Other;
-using App.Scripts.Shared.Inputs.ScriptableObjects;
+using App.Scripts.Shared.Inputs;
 using UnityEngine;
+using Version1.Shared.Inputs.Other;
+using Version1.Shared.Inputs.ScriptableObjects;
 
-namespace App.Scripts.Shared.Inputs
+namespace Version1.Shared.Inputs
 {
     public class PCInput : IInput
     {

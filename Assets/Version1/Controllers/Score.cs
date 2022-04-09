@@ -1,6 +1,7 @@
-﻿using Version1.Shared;
 
-namespace Version1.Core
+using Version1.Shared;
+
+namespace Version1.Controllers
 {
     public class Score
     {

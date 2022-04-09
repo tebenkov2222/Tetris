@@ -1,10 +1,13 @@
+using System;
 using System.Linq;
 using App.Scripts.Shared.Inputs;
-using App.Scripts.Shared.Inputs.ScriptableObjects;
 using UnityEngine;
 using Version1.Controllers;
 using Version1.Core;
 using Version1.DTOs;
+using Version1.Shared;
+using Version1.Shared.Inputs;
+using Version1.Shared.Inputs.ScriptableObjects;
 using Version1.Views;
 
 namespace Version1
@@ -24,7 +27,7 @@ namespace Version1
         
         private IInput _input;
 
-        private MatrixController _matrixController;
+        private GameController _gameController;
         private MatrixOperationsController _matrixOperationsController;
         private MoveShapeController _moveShapeController;
         private SpawnShapeController _spawnShapeController;
@@ -45,26 +48,25 @@ namespace Version1
             _scoreController.MaxScore.OnValueChange += _maxScoreView.SetValue;
             _maxScoreView.SetValue(_scoreController.MaxScore.Value);
 
-            _matrixController = new MatrixController(_matrixControllerDto);
-            _matrixOperationsController = new MatrixOperationsController(_matrixController);
+            _gameController = new GameController(_matrixControllerDto);
+            _matrixOperationsController = new MatrixOperationsController(_gameController);
             _checkRoundsController = new CheckRoundsController(_matrixOperationsController);
 
             _windowController = new WindowController(_windowControllerDto);
 
-            _moveShapeController = new MoveShapeController(_matrixController,_input);
+            _moveShapeController = new MoveShapeController(_gameController,_input);
             _moveShapeController.OnShapeStay+=OnShapeControllerStay;
             _spawnShapeController = new SpawnShapeController(_pointViewPrefab);
             _levelUpController = new LevelUpController(_moveShapeController);
             SpawnShape();
         }
-
         private void OnShapeControllerStay()
         {
             if(_isEndGame) return;
-            _matrixController.StayShape(_movedShape.Points);
-            var check = _checkRoundsController.Check(_movedShape.GetRows());
-            _scoreController.AddScoreByLine(check);
-            SpawnShape();
+            _gameController.StayShape(_movedShape.Points); // фигура ввстала на место (2 становится в матрице)
+            var check = _checkRoundsController.Check(_movedShape.GetRows()); 
+            _scoreController.AddScoreByLine(check); // проверка сорке
+            SpawnShape(); // спавн. новую фигуру
         }
 
         private void OnDisable()
@@ -85,7 +87,7 @@ namespace Version1
 
             _movedShape = _nextShape;
 
-            if (_movedShape.Points.Any(point => _matrixController.CheckMatrixValue(point, 2)))
+            if (_movedShape.Points.Any(point => _gameController.CheckMatrixValue(point, 2)))
             {
                 FullMatrix();
                 return;
@@ -98,7 +100,7 @@ namespace Version1
             _windowController.UpdateShape(randomShape);
 
             _moveShapeController.ChangeShape(_movedShape);
-            _matrixController.SpawnPoints(_movedShape.PointViews, _movedShape.Points);
+            _gameController.SpawnPoints(_movedShape.PointViews, _movedShape.Points);
         }
 
         private void FullMatrix()

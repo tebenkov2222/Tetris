@@ -1,10 +1,12 @@
 using UnityEngine;
-using Version1.DTOs;
 
 namespace Version1.Views
 {
     public class PointView : MonoBehaviour
     {
+        private byte _value;
+
+        public byte Value => _value;
         [SerializeField] private SpriteRenderer _spriteRenderer;
         public void Init(Color color, Vector3 startPosition)
         {

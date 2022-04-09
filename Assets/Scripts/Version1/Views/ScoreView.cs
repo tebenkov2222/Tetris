@@ -11,6 +11,5 @@ namespace Version1.Views
         {
             _text.text = value.ToString();
         }
-        
     }
 }

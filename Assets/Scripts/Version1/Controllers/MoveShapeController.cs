@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using App.Scripts.Shared.Inputs;
 using UnityEngine;
 using Version1.Core;
-using Version1.Shared;
 using Button = App.Scripts.Shared.Inputs.Button;
 
 namespace Version1.Controllers
@@ -17,14 +16,14 @@ namespace Version1.Controllers
         private float _lastTime;
         private float _deltaTime = 1;
         private bool _isCanMoved;
-        private MatrixController _matrixController;
-        public event ReturnVoid OnShapeStay;
+        private GameController _gameController;
+        public event Action OnShapeStay;
         private IInput _input;
-        public MoveShapeController(MatrixController matrixController, IInput input)
+        public MoveShapeController(GameController gameController, IInput input)
         {
             _input = input;
             _input.ReturnButtonEvent += OnButtonChange;
-            _matrixController = matrixController;
+            _gameController = gameController;
             _nextPositionsShape = new List<Vector2Int>();
             _isCanMoved = true;
         }
@@ -46,7 +45,7 @@ namespace Version1.Controllers
                     UpdateMatrix();
                     break;
                 case Button.Up:
-                    if(!Rotate()) return;
+                    if(!TryRotate()) return;
                     UpdateMatrix();
                     break;
                 case Button.Down:
@@ -57,18 +56,17 @@ namespace Version1.Controllers
             }
         }
 
-        public bool Rotate()
+        public bool TryRotate()
         {
             for (var i = 0; i < _movedShape.Points.Count; i++)
             {
                 var deltaPosition = _movedShape.Points[i] - _movedShape.CenterPosition;
-                _nextPositionsShape[i] = _movedShape.CenterPosition + new Vector2Int(deltaPosition.Y, -deltaPosition.X);
-                if (!CheckRange(_nextPositionsShape[i]) || _matrixController.CheckMatrixValue(_nextPositionsShape[i], 2))
+                _nextPositionsShape[i] = _movedShape.CenterPosition + new Vector2Int(-deltaPosition.Y, deltaPosition.X);
+                if (!CheckRange(_nextPositionsShape[i]) || _gameController.CheckMatrixValue(_nextPositionsShape[i], 2))
                 {
                     return false;
                 }
             }
-
             return true;
         }
         public void ChangeShape(Shape shape)
@@ -103,7 +101,7 @@ namespace Version1.Controllers
 
         public void UpdateMatrix()
         {
-            _matrixController.MovePoits(_movedShape.Points,_nextPositionsShape);
+            _gameController.MovePoits(_movedShape.Points,_nextPositionsShape);
             _movedShape.UpdatePointPosition(_nextPositionsShape);
         }
         public bool TryMoveTo(Vector2Int direction)
@@ -111,7 +109,7 @@ namespace Version1.Controllers
             for (var i = 0; i < _movedShape.Points.Count; i++)
             {
                 _nextPositionsShape[i] = _movedShape.Points[i] + direction;
-                if (!CheckRange(_nextPositionsShape[i]) || _matrixController.CheckMatrixValue(_nextPositionsShape[i], 2))
+                if (!CheckRange(_nextPositionsShape[i]) || _gameController.CheckMatrixValue(_nextPositionsShape[i], 2))
                 {
                     return false;
                 }
@@ -123,6 +121,6 @@ namespace Version1.Controllers
         {
             _input.ReturnButtonEvent -= OnButtonChange;
         }
-        public bool CheckRange(Vector2Int position) =>position.Y >= 0 && position.Y < _matrixController.Size.Y && position.X >= 0 && position.X < _matrixController.Size.X;
+        public bool CheckRange(Vector2Int position) =>position.Y >= 0 && position.Y < _gameController.Size.Y && position.X >= 0 && position.X < _gameController.Size.X;
     }
 }

@@ -5,13 +5,18 @@ using Version1.Views;
 
 namespace Version1.Controllers
 {
-    public class MatrixController
+    public class GameController
     {
         private List<Vector2Int> _updatePoint;
+        
         private List<List<byte>> _matrix;
         private List<List<PointView>> _matrixView;
 
-        public List<List<byte>> Matrix => _matrix;
+        public List<List<byte>> Matrix
+        {
+            get { return _matrix; }
+        }
+
         public List<List<PointView>> MatrixView
         {
             get => _matrixView;
@@ -25,7 +30,7 @@ namespace Version1.Controllers
         }
 
         private MatrixControllerDto _matrixControllerDto;
-        public MatrixController(MatrixControllerDto matrixControllerDto)
+        public GameController(MatrixControllerDto matrixControllerDto)
         {
             _matrixControllerDto = matrixControllerDto;
             Size = matrixControllerDto.Size;
@@ -72,7 +77,6 @@ namespace Version1.Controllers
                 SetMatrixViewValue(nextPosition[i], pointViews[lastPosition[i]]);
             }
         }
-
         public void StayShape(List<Vector2Int> points)
         {
             foreach (var point in points)
@@ -80,17 +84,14 @@ namespace Version1.Controllers
                 SetMatrixValue(point, 2);
             }
         }
-
         public bool CheckMatrixValue(Vector2Int vector2Int, byte value)
         {
             return GetMatrixValue(vector2Int) == value;
         }
-
         public byte GetMatrixValue(Vector2Int vector2Int)
         {
             return _matrix[vector2Int.Y][vector2Int.X];
         }
-
         public void SetMatrixValue(Vector2Int vector2Int, byte value)
         {
             _matrix[vector2Int.Y][vector2Int.X] = value;
