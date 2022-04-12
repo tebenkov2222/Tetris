@@ -9,27 +9,27 @@ namespace Version1.Controllers
     public class SpawnShapeController
     {
         private System.Random _random;
-        public SpawnShapeController(PointView prefab)
-        {
-            _prefab = prefab;
-        }
-
         private PointView _prefab;
+
+        public SpawnShapeController()
+        {
+            _random = new System.Random();
+        }
 
         public ShapeBase GetRandomShape()
         {
-            int range = Random.Range(0, 7);
-            switch (range)
+            var range = _random.Next(0,7);
+            return range switch
             {
-                case 0: return ShapeBase.I;
-                case 1: return ShapeBase.T;
-                case 2: return ShapeBase.J;
-                case 3: return ShapeBase.L;
-                case 4: return ShapeBase.O;
-                case 5: return ShapeBase.S;
-                case 6: return ShapeBase.Z;
-            }
-            return null;
+                0 => ShapeBase.I,
+                1 => ShapeBase.T,
+                2 => ShapeBase.J,
+                3 => ShapeBase.L,
+                4 => ShapeBase.O,
+                5 => ShapeBase.S,
+                6 => ShapeBase.Z,
+                _ => null
+            };
         }
 
         public List<Vector2Int> ShapeImageToMatrixPositions(ShapeBase shapeBase, Vector2Int spawnVector2Int)
@@ -41,6 +41,7 @@ namespace Version1.Controllers
                 {
                     if (shapeBase.Image[i][j] == 1)
                     {
+                        //Debug.Log(new Vector2Int(spawnVector2Int.X + j, spawnVector2Int.Y + i));
                         positions.Add(new Vector2Int(spawnVector2Int.X + j, spawnVector2Int.Y + i));
                     }
                 }
@@ -52,15 +53,8 @@ namespace Version1.Controllers
         public Shape SpawnRandomShape()
         {
             var randomShape= GetRandomShape();
-            var points = ShapeImageToMatrixPositions(randomShape, new Vector2Int(3 ,0));
-            List<PointView> pointViews = new List<PointView>();
-            foreach (var instantiate in points.Select(point => Object.Instantiate(_prefab)))
-            {
-                pointViews.Add(instantiate);
-                instantiate.Init(randomShape.Color, Vector3.zero);
-                instantiate.SetEnable(false);
-            }
-            return new Shape(pointViews,points);
+            var points = ShapeImageToMatrixPositions(randomShape, new Vector2Int(0 ,0));
+            return new Shape(points, randomShape.Color);
         }
     }
 }

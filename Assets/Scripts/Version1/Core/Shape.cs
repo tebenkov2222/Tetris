@@ -1,22 +1,24 @@
 using System.Collections.Generic;
+using UnityEngine;
 using Version1.Views;
 
 namespace Version1.Core
 {
     public class Shape
     {
-        public List<PointView> PointViews;
+        public Color Color => _color;
+        private Color _color;
         public List<Vector2Int> Points
         {
             get;
-            private set;
+            set;
         }
         public Vector2Int CenterPosition => Points[_centerIndex];
         private int _centerIndex = 0;
 
-        public Shape(List<PointView> pointViews, List<Vector2Int> points)
+        public Shape(List<Vector2Int> points, Color color)
         {
-            PointViews = pointViews;
+            _color = color;
             Points = new List<Vector2Int>(points);
             FindCenterPoint();
         }

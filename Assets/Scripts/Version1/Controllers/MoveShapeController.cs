@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using App.Scripts.Shared.Inputs;
 using UnityEngine;
 using Version1.Core;
@@ -10,20 +11,21 @@ namespace Version1.Controllers
     public class MoveShapeController
     {
         private Shape _movedShape;
-        private int _centerPointIndex;
         private bool _isSprint;
         private List<Vector2Int> _nextPositionsShape;
         private float _lastTime;
+        private float _time;
         private float _deltaTime = 1;
         private bool _isCanMoved;
-        private GameController _gameController;
+        private GameFieldController _gameFieldController;
         public event Action OnShapeStay;
         private IInput _input;
-        public MoveShapeController(GameController gameController, IInput input)
+        public MoveShapeController(GameFieldController gameFieldController, IInput input)
         {
             _input = input;
+            _time = 0;
             _input.ReturnButtonEvent += OnButtonChange;
-            _gameController = gameController;
+            _gameFieldController = gameFieldController;
             _nextPositionsShape = new List<Vector2Int>();
             _isCanMoved = true;
         }
@@ -62,7 +64,7 @@ namespace Version1.Controllers
             {
                 var deltaPosition = _movedShape.Points[i] - _movedShape.CenterPosition;
                 _nextPositionsShape[i] = _movedShape.CenterPosition + new Vector2Int(-deltaPosition.Y, deltaPosition.X);
-                if (!CheckRange(_nextPositionsShape[i]) || _gameController.CheckMatrixValue(_nextPositionsShape[i], 2))
+                if (!CheckRange(_nextPositionsShape[i]) || _gameFieldController.CheckPointValue(_nextPositionsShape[i], PointStatus.Stay))
                 {
                     return false;
                 }
@@ -72,8 +74,8 @@ namespace Version1.Controllers
         public void ChangeShape(Shape shape)
         {
             _lastTime = Time.time;
+            _time = Time.time;
             _isCanMoved = true;
-            _lastTime = Time.time;
             _movedShape = shape;
             _nextPositionsShape.Clear();
             _nextPositionsShape.AddRange(shape.Points);
@@ -87,8 +89,9 @@ namespace Version1.Controllers
         public void MoveDown()
         {
             if(!_isCanMoved) return;
-            if (!(Time.time - _lastTime > _deltaTime*(_isSprint? 0.1f:1))) return;
-            _lastTime = Time.time;
+            _time += Time.deltaTime;
+            if (!(_time - _lastTime > _deltaTime*(_isSprint? 0.1f:1))) return;
+            _lastTime = _time;
             if (!TryMoveTo(Vector2Int.Up))
             {
                 _isCanMoved = false;
@@ -98,10 +101,12 @@ namespace Version1.Controllers
 
             UpdateMatrix();
         }
+        List<(Vector2Int startPoint, Vector2Int endPoint)> GetPoinsAndNextPoints() => _movedShape.Points.Zip(_nextPositionsShape,
+            (startPosition, endPosition) => (startPosition, endPosition)).ToList();
 
         public void UpdateMatrix()
         {
-            _gameController.MovePoits(_movedShape.Points,_nextPositionsShape);
+            _gameFieldController.MovePoints(GetPoinsAndNextPoints());
             _movedShape.UpdatePointPosition(_nextPositionsShape);
         }
         public bool TryMoveTo(Vector2Int direction)
@@ -109,7 +114,7 @@ namespace Version1.Controllers
             for (var i = 0; i < _movedShape.Points.Count; i++)
             {
                 _nextPositionsShape[i] = _movedShape.Points[i] + direction;
-                if (!CheckRange(_nextPositionsShape[i]) || _gameController.CheckMatrixValue(_nextPositionsShape[i], 2))
+                if (!CheckRange(_nextPositionsShape[i]) || _gameFieldController.CheckPointValue(_nextPositionsShape[i], 2))
                 {
                     return false;
                 }
@@ -121,6 +126,6 @@ namespace Version1.Controllers
         {
             _input.ReturnButtonEvent -= OnButtonChange;
         }
-        public bool CheckRange(Vector2Int position) =>position.Y >= 0 && position.Y < _gameController.Size.Y && position.X >= 0 && position.X < _gameController.Size.X;
+        public bool CheckRange(Vector2Int position) =>position.Y >= 0 && position.Y < _gameFieldController.Size.Y && position.X >= 0 && position.X < _gameFieldController.Size.X;
     }
 }
